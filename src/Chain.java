@@ -2,6 +2,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.FileNotFoundException;
 
 /**
  * @authorFelipe Custódio, Gabriel Scalici
@@ -29,6 +31,9 @@ public class Chain {
     // perimeter
     int points;
     double perimeter;
+	
+	// matriks flag
+	char flagpixel[][];
 
     public Chain() throws IOException {
 
@@ -49,25 +54,37 @@ public class Chain {
         points = 0;
         perimeter = 0;
 
+		//write output file
+		PrintWriter pw = new PrintWriter(new File("redrawnpic.txt"));
+		StringBuilder sb = new StringBuilder();
+		
         // treshold image
         pixels = new int[h][w];
+		flagpixel = new char[h][w];
         visited = new int [h][w];
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
+				flagpixel[i][j]=' ';
+				
                 pixels[i][j] = image.getRGB(j, i);
                 if (pixels[i][j] <= -10197916) {
                      // shades of gray -> black
-					System.out.print("A ");
                     pixels[i][j] = 1;
+					sb.append("X");
                 } else {
                      // background -> white
-					 System.out.print("B ");
                     pixels[i][j] = 0;
+					sb.append(" ");
                 }
                 // set pixel as unvisited
                 visited[i][j] = 0;
             }
-        }   
+			sb.append("\r\n");
+        }
+		
+		//dump ke txt
+		pw.write(sb.toString());
+		pw.close();
     }
 
     public void firstPixel() {
@@ -203,6 +220,7 @@ public class Chain {
     	// check east
     	if (borderPixel(i, j+1) && !flag && !flag && visited[i][j+1] == 0) {
     		j = j + 1;
+			flagpixel[i][j]='X';
     		System.out.print("0 ");
     		perimeter += 1;
     		flag = true;
@@ -214,6 +232,7 @@ public class Chain {
     	if (borderPixel(i+1, j+1) && !flag && visited[i+1][j+1] == 0) {
     		i = i + 1;
     		j = j + 1;
+			flagpixel[i][j]='X';
     		System.out.print("1 ");
     		perimeter += Math.sqrt(2);
     		flag = true;
@@ -224,6 +243,7 @@ public class Chain {
     	// check south
     	if (borderPixel(i+1, j) && !flag && visited[i+1][j] == 0) {
     		i = i + 1;
+			flagpixel[i][j]='X';
     		System.out.print("2 ");
     		perimeter += 1;
     		flag = true;
@@ -235,6 +255,7 @@ public class Chain {
     	if (borderPixel(i+1, j-1) && !flag && visited[i+1][j-1] == 0) {
     		i = i + 1;
     		j = j - 1;
+			flagpixel[i][j]='X';
     		System.out.print("3 ");
     		perimeter += Math.sqrt(2);
     		flag = true;
@@ -245,6 +266,7 @@ public class Chain {
     	// check west
     	if (borderPixel(i, j-1) && !flag && visited[i][j-1] == 0) {
     		j = j - 1;
+			flagpixel[i][j]='X';
     		System.out.print("4 ");
     		perimeter += 1;
     		flag = true;
@@ -256,6 +278,7 @@ public class Chain {
     	if (borderPixel(i-1, j-1) && !flag && visited[i-1][j-1] == 0) {
     		i = i - 1;
     		j = j - 1;
+			flagpixel[i][j]='X';
     		System.out.print("5 ");
     		perimeter += Math.sqrt(2);
     		flag = true;
@@ -266,6 +289,7 @@ public class Chain {
     	// check north
     	if (borderPixel(i-1, j) && !flag && visited[i-1][j] == 0) {
     		i = i - 1;
+			flagpixel[i][j]='X';
     		System.out.print("6 ");
     		perimeter += 1;
     		flag = true;
@@ -277,6 +301,7 @@ public class Chain {
     	if (borderPixel(i-1, j+1) && !flag && visited[i-1][j+1] == 0) {
     		i = i - 1;
     		j = j + 1;
+			flagpixel[i][j]='X';
     		System.out.print("7 ");
     		perimeter += Math.sqrt(2);
     		flag = true;
@@ -329,15 +354,36 @@ public class Chain {
         System.out.println("Shape height: " + c.height);
         
         // generate chain codes
+		// print first coordinate
+		System.out.println("Begin Coordinate: " + c.begin[0] + " " + c.begin[1]);
+		
         // get coordinates of first border pixel after initial
     	int[] index = new int[2];
         System.out.print("Chain Codes: ");
     	index = c.borderNeighbors(c.begin[0], c.begin[1]);
         c.chainCodes(index[0], index[1]);       
-
+		
+		// print last coordinate
+		System.out.println("End Coordinate: " + c.end[0] + " " + c.end[1]);
+		
         // get perimeter size
         c.border();
         System.out.println("Border pixels: " + c.points + " pixels");
         System.out.println("Shape perimeter: " + c.perimeter);
+		
+		//write output file
+		PrintWriter pw = new PrintWriter(new File("border.txt"));
+		StringBuilder sb = new StringBuilder();
+		
+		for (int i = 0; i < c.h; i++) {
+            for (int j = 0; j < c.w; j++) {
+				sb.append(c.flagpixel[i][j]);
+			}
+			sb.append("\r\n");
+		}
+		
+		//dump ke txt
+		pw.write(sb.toString());
+		pw.close();
     }
 }
